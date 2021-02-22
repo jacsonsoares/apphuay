@@ -1,7 +1,11 @@
 import React,{ useCallback, useRef }  from 'react';
-import {Image, KeyboardAvoidingView, Platform, ScrollView, TextInput} from 'react-native';
+import {Image, KeyboardAvoidingView, Platform, ScrollView, TextInput, Alert} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import {useNavigation } from '@react-navigation/native';
+import * as Yup from 'yup';
+import getValidationErrors from '../../utils/getValidationErrors';
+import api from '../../services/api';
+
 import { Form } from '@unform/mobile';
 import { FormHandles } from '@unform/core';
 
@@ -19,10 +23,58 @@ const SignUp : React.FC = () => {
   
   const navigation = useNavigation();
 
-  const handledSignUp = useCallback((data : object) => {
-    console.log(data);
-  },[]);
+  interface SignUpFormData{
+    name: string;
+    email: string;
+    phone : string;
+    password: string;
+  }
 
+  const handledSignUp = useCallback(async (data : SignUpFormData) => {
+    try {
+      console.log(data);
+     
+      // limpando os erros
+      formRef.current?.setErrors({});
+      // validando formulario
+      const phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/
+      
+      const lSchema = Yup.object().shape({
+        name : Yup.string().required('Nome obrigatório'),
+        email: Yup.string().required('Email obrigatório').email('Informe um e-mail válido.'),
+        phone: Yup.string().required('Cellular obrigatório').matches(phoneRegExp, 'Celular Inválido').min(10, "minimo 10").max(12, "maximo 12"),
+        password: Yup.string().required('Senha obrigatória'),
+      });
+      await lSchema.validate(data, { abortEarly: false });
+      
+      // Criando usuario 
+      const lUser = {
+        issuer_id: 1,
+        user_name: data.name,
+        user_login: data.email,
+        password: data.password,
+        phone : data.phone
+      };
+      const lResult = await api.post('/collaborator', lUser);
+      console.log('Resultado : ' + JSON.stringify(lResult.data));
+      
+      //retirecionado
+      //navigation.goBack();
+
+    } catch (err) {
+      // validando excessoes do formulario
+      if (err instanceof Yup.ValidationError) {
+        console.log('chegou no erro...');
+        const errors = getValidationErrors(err);
+        console.log(errors);
+        // exibindo excessoes no formulario
+        formRef.current?.setErrors(errors);
+        //para nao processar o addToast, continua somente quando houver erro.
+        return;
+      }
+      Alert.alert('Erro na Autenticação','Erro ao fazer login, valide as credenciais');      
+    }
+  }, []);
   
     
   //KeyboardAvoidingView : utilizada para que o teclado no IOs nao sobreponha o container
