@@ -13,10 +13,9 @@ export const Container = styled.View<ContainerProps>`
   background : #232129;
   border-radius : 10px;
   margin-bottom : 8px;
-  border-width : 1px solid;
+  border-width : 1;
   border-color : #232129;
 
-  //d4051f vermelho
   flex-direction : row;
   align-items : center;
   ${(props) => 
