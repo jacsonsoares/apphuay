@@ -2,7 +2,7 @@ import React, { useCallback, useRef } from 'react';
 import {Image, KeyboardAvoidingView, Platform, ScrollView, TextInput, Alert} from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import {useNavigation } from '@react-navigation/native';
-import Yup from 'yup';
+import * as Yup from 'yup';
 import getValidationErrors from '../../utils/getValidationErrors';
 
 import { Form } from '@unform/mobile';
@@ -31,6 +31,8 @@ const SignIn : React.FC = () => {
   // metodo que valida e chama autenticao do usuario
   const handleSignIn = useCallback(async (data: SignInFormData) => {
     try {
+      console.log(data);
+     
       // limpando os erros
       formRef.current?.setErrors({});
       // validando formulario
@@ -39,7 +41,7 @@ const SignIn : React.FC = () => {
         password: Yup.string().required('Senha obrigatória'),
       });
       await lSchema.validate(data, { abortEarly: false });
-
+      
       // Autenticando usuario
       //await signIn({email : data.email, password : data.password});
 
@@ -49,14 +51,15 @@ const SignIn : React.FC = () => {
     } catch (err) {
       // validando excessoes do formulario
       if (err instanceof Yup.ValidationError) {
+        console.log('chegou no erro...');
         const errors = getValidationErrors(err);
+        console.log(errors);
         // exibindo excessoes no formulario
         formRef.current?.setErrors(errors);
         //para nao processar o addToast, continua somente quando houver erro.
         return;
       }
       Alert.alert('Erro na Autenticação','Erro ao fazer login, valide as credenciais');      
-
     }
   }, []);
 
