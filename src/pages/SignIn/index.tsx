@@ -4,11 +4,12 @@ import Icon from 'react-native-vector-icons/Feather';
 import {useNavigation } from '@react-navigation/native';
 import * as Yup from 'yup';
 import getValidationErrors from '../../utils/getValidationErrors';
+import api from '../../services/api';
 
 import { Form } from '@unform/mobile';
 import { FormHandles } from '@unform/core';
-
 import {useAuth} from '../../hooks/auth';
+
 import Input from '../../components/Input';
 import Button from '../../components/Button';
 import logoImg from '../../assets/logo.png';
@@ -26,13 +27,11 @@ const SignIn : React.FC = () => {
   const passwordRef = useRef<TextInput>(null);
 
   const navigation = useNavigation();
-  const { signIn } = useAuth();
-
+  const { signIn, user } = useAuth();
+  
   // metodo que valida e chama autenticao do usuario
   const handleSignIn = useCallback(async (data: SignInFormData) => {
     try {
-      console.log(data);
-     
       // limpando os erros
       formRef.current?.setErrors({});
       // validando formulario
@@ -42,11 +41,7 @@ const SignIn : React.FC = () => {
       });
       await lSchema.validate(data, { abortEarly: false });
       
-      // Autenticando usuario
-      //await signIn({email : data.email, password : data.password});
-
-      //retirecionado
-      //history.push('/dashboard');
+      await signIn({email : data.email, password : data.password});
 
     } catch (err) {
       // validando excessoes do formulario
@@ -61,7 +56,7 @@ const SignIn : React.FC = () => {
       }
       Alert.alert('Erro na Autenticação','Erro ao fazer login, valide as credenciais');      
     }
-  }, []);
+  }, [signIn]);
 
   //KeyboardAvoidingView : utilizada para que o teclado no IOs nao sobreponha o container
   return (

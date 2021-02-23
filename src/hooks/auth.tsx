@@ -50,18 +50,31 @@ export const AuthProvider : React.FC = ({ children}) => {
   },[]);
 
   // metodo de validacao de login
-  const signIn = useCallback(async({ email, password}) => {
+  const signIn = useCallback(async({ email, password }) => {
+    // Criando usuario 
+    const lUser = {
+      user: email,
+      password: password
+    };
+    
     // autenticando na API
-    const response = await api.post('sessions',{email,password});
-    console.log(response.data);
-    // armazenando resultado da autenticacao
-    const {token, user} = response.data;
-    await AssyncStorage.multiSet([
-      ['@focus:token', token], 
-      ['@focus:user', JSON.stringify(user)] 
-    ]);
-    // armazenando estado apos altenticacao contexto
-    setData({token , user});
+    const lResult = await api.post('/login', lUser);
+    console.log('chegou no Auth..');
+    console.log(lResult.data);
+    if (lResult.data){
+      if (lResult.data.status === 'OK'){
+        // armazenando resultado da autenticacao
+        const {token, user} = lResult.data;
+        await AssyncStorage.multiSet([
+          ['@focus:token', token], 
+          ['@focus:user', JSON.stringify(user)] 
+        ]);
+        // armazenando estado apos altenticacao contexto
+        setData({token , user}); 
+      }
+    }
+
+    
 
   }, [] );
 

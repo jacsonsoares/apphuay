@@ -56,17 +56,21 @@ const SignUp : React.FC = () => {
         phone : data.phone
       };
       const lResult = await api.post('/collaborator', lUser);
-      console.log('Resultado : ' + JSON.stringify(lResult.data));
-      
-      //retirecionado
-      //navigation.goBack();
+      //console.log('Resultado : ' + JSON.stringify(lResult.data));      
+      if (lResult.data){
+        if (lResult.data.status === 'OK'){
+          Alert.alert('Conta cadastrada com sucesso!', 'Aguarde contato ou email de liberação para acessar o aplicativo.');
+          //retirecionado
+          navigation.goBack();
+        }else{
+          Alert.alert(lResult.data.status, lResult.data.message);
+        }
+      }
 
     } catch (err) {
       // validando excessoes do formulario
       if (err instanceof Yup.ValidationError) {
-        console.log('chegou no erro...');
         const errors = getValidationErrors(err);
-        console.log(errors);
         // exibindo excessoes no formulario
         formRef.current?.setErrors(errors);
         //para nao processar o addToast, continua somente quando houver erro.
